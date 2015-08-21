@@ -2,125 +2,105 @@ package org.shadowvpn.shadowvpn.model;
 
 import io.realm.RealmObject;
 
-public class ShadowVPNConfigure extends RealmObject
-{
-	private String title;
+public class ShadowVPNConfigure extends RealmObject {
 
-	private String serverIP;
+    private String title;
 
-	private int port;
+    private String serverIP;
 
-	private String password;
+    private int port;
 
-	private String userToken;
+    private String password;
 
-	private String localIP;
+    private String userToken;
 
-	private int maximumTransmissionUnits;
+    private String localIP;
 
-	private int concurrency;
+    private int maximumTransmissionUnits;
 
-	private boolean bypassChinaRoutes;
+    private int concurrency;
 
-	private boolean selected;
+    private boolean bypassChinaRoutes;
 
-	public String getTitle()
-	{
-		return this.title;
-	}
+    private boolean selected;
 
-	public void setTitle(final String pTitle)
-	{
-		this.title = pTitle;
-	}
+    public String getTitle() {
+        return this.title;
+    }
 
-	public String getServerIP()
-	{
-		return this.serverIP;
-	}
+    public void setTitle(final String pTitle) {
+        this.title = pTitle;
+    }
 
-	public void setServerIP(final String pServerIP)
-	{
-		this.serverIP = pServerIP;
-	}
+    public String getServerIP() {
+        return this.serverIP;
+    }
 
-	public int getPort()
-	{
-		return this.port;
-	}
+    public void setServerIP(final String pServerIP) {
+        this.serverIP = pServerIP;
+    }
 
-	public void setPort(final int pPort)
-	{
-		this.port = pPort;
-	}
+    public int getPort() {
+        return this.port;
+    }
 
-	public String getPassword()
-	{
-		return this.password;
-	}
+    public void setPort(final int pPort) {
+        this.port = pPort;
+    }
 
-	public void setPassword(final String pPassword)
-	{
-		this.password = pPassword;
-	}
+    public String getPassword() {
+        return this.password;
+    }
 
-	public String getUserToken()
-	{
-		return this.userToken;
-	}
+    public void setPassword(final String pPassword) {
+        this.password = pPassword;
+    }
 
-	public void setUserToken(final String pUserToken)
-	{
-		this.userToken = pUserToken;
-	}
+    public String getUserToken() {
+        return this.userToken;
+    }
 
-	public String getLocalIP()
-	{
-		return this.localIP;
-	}
+    public void setUserToken(final String pUserToken) {
+        this.userToken = pUserToken;
+    }
 
-	public void setLocalIP(final String pLocalIP)
-	{
-		this.localIP = pLocalIP;
-	}
+    public String getLocalIP() {
+        return this.localIP;
+    }
 
-	public int getMaximumTransmissionUnits()
-	{
-		return this.maximumTransmissionUnits;
-	}
+    public void setLocalIP(final String pLocalIP) {
+        this.localIP = pLocalIP;
+    }
 
-	public void setMaximumTransmissionUnits(final int pMaximumTransmissionUnits)
-	{
-		this.maximumTransmissionUnits = pMaximumTransmissionUnits;
-	}
+    public int getMaximumTransmissionUnits() {
+        return this.maximumTransmissionUnits;
+    }
 
-	public int getConcurrency()
-	{
-		return this.concurrency;
-	}
+    public void setMaximumTransmissionUnits(final int pMaximumTransmissionUnits) {
+        this.maximumTransmissionUnits = pMaximumTransmissionUnits;
+    }
 
-	public void setConcurrency(final int pConcurrency)
-	{
-		this.concurrency = pConcurrency;
-	}
+    public int getConcurrency() {
+        return this.concurrency;
+    }
 
-	public boolean isBypassChinaRoutes()
-	{
-		return this.bypassChinaRoutes;
-	}
+    public void setConcurrency(final int pConcurrency) {
+        this.concurrency = pConcurrency;
+    }
 
-	public void setBypassChinaRoutes(final boolean pBypassChinaRoutes)
-	{
-		this.bypassChinaRoutes = pBypassChinaRoutes;
-	}
+    public boolean isBypassChinaRoutes() {
+        return this.bypassChinaRoutes;
+    }
 
-	public boolean isSelected()
-	{
-		return this.selected;
-	}
+    public void setBypassChinaRoutes(final boolean pBypassChinaRoutes) {
+        this.bypassChinaRoutes = pBypassChinaRoutes;
+    }
 
-	public void setSelected(final boolean pSelected)
-	{
-		this.selected = pSelected;
-	}
+    public boolean isSelected() {
+        return this.selected;
+    }
+
+    public void setSelected(final boolean pSelected) {
+        this.selected = pSelected;
+    }
 }

@@ -16,148 +16,137 @@ import org.shadowvpn.shadowvpn.model.ShadowVPNConfigure;
 import org.shadowvpn.shadowvpn.ui.adapter.ShadowVPNConfigureAdapter;
 import org.shadowvpn.shadowvpn.util.ShadowVPNConfigureHelper;
 
-public class ShadowVPNListFragment extends ListFragment
-{
-	private static final int MENU_ID_STOP = 0x01;
+public class ShadowVPNListFragment extends ListFragment {
 
-	private static final int MENU_ID_EDIT = 0x02;
+    private static final int MENU_ID_STOP = 0x01;
 
-	private static final int MENU_ID_DELETE = 0x03;
+    private static final int MENU_ID_EDIT = 0x02;
 
-	public static ShadowVPNListFragment newInstance()
-	{
-		final ShadowVPNListFragment fragment = new ShadowVPNListFragment();
-		final Bundle arguments = new Bundle();
-		fragment.setArguments(arguments);
-		return fragment;
-	}
+    private static final int MENU_ID_DELETE = 0x03;
 
-	private ShadowVPNConfigureAdapter mShadowVPNConfigureAdapter;
+    private ShadowVPNConfigureAdapter mShadowVPNConfigureAdapter;
 
-	private IOnFragmentInteractionListener mListener;
+    private IOnFragmentInteractionListener mListener;
 
-	public ShadowVPNListFragment()
-	{
-	}
+    public ShadowVPNListFragment() {
+    }
 
-	@Override
-	public void onAttach(final Activity pActivity)
-	{
-		super.onAttach(pActivity);
+    public static ShadowVPNListFragment newInstance() {
+        final ShadowVPNListFragment fragment = new ShadowVPNListFragment();
+        final Bundle arguments = new Bundle();
+        fragment.setArguments(arguments);
+        return fragment;
+    }
 
-		try
-		{
-			this.mListener = (IOnFragmentInteractionListener) pActivity;
-		}
-		catch (final ClassCastException e)
-		{
-			throw new ClassCastException(pActivity.toString() + " must implement OnFragmentInteractionListener");
-		}
-	}
+    @Override
+    public void onAttach(final Activity pActivity) {
+        super.onAttach(pActivity);
 
-	@Override
-	public void onViewCreated(final View pView, final Bundle pSavedInstanceState)
-	{
-		super.onViewCreated(pView, pSavedInstanceState);
+        try {
+            this.mListener = (IOnFragmentInteractionListener) pActivity;
+        } catch (final ClassCastException e) {
+            throw new ClassCastException(
+                    pActivity.toString() + " must implement OnFragmentInteractionListener");
+        }
+    }
 
-		this.mShadowVPNConfigureAdapter = new ShadowVPNConfigureAdapter(this.getActivity(), ShadowVPNConfigureHelper.getAll(this.getActivity()));
+    @Override
+    public void onViewCreated(final View pView, final Bundle pSavedInstanceState) {
+        super.onViewCreated(pView, pSavedInstanceState);
 
-		this.setListAdapter(this.mShadowVPNConfigureAdapter);
+        this.mShadowVPNConfigureAdapter = new ShadowVPNConfigureAdapter(this.getActivity(),
+                ShadowVPNConfigureHelper.getAll(this.getActivity()));
 
-		this.registerForContextMenu(this.getListView());
-	}
+        this.setListAdapter(this.mShadowVPNConfigureAdapter);
 
-	@Override
-	public void onDestroyView()
-	{
-		this.unregisterForContextMenu(this.getListView());
+        this.registerForContextMenu(this.getListView());
+    }
 
-		super.onDestroyView();
-	}
+    @Override
+    public void onDestroyView() {
+        this.unregisterForContextMenu(this.getListView());
 
-	@Override
-	public void onDetach()
-	{
-		super.onDetach();
+        super.onDestroyView();
+    }
 
-		this.mListener = null;
-	}
+    @Override
+    public void onDetach() {
+        super.onDetach();
 
-	@Override
-	public void onListItemClick(final ListView pListView, final View pView, final int pPosition, final long pId)
-	{
-		super.onListItemClick(pListView, pView, pPosition, pId);
+        this.mListener = null;
+    }
 
-		final ShadowVPNConfigure shadowVPNConfigure = this.mShadowVPNConfigureAdapter.getItem(pPosition);
+    @Override
+    public void onListItemClick(final ListView pListView, final View pView, final int pPosition,
+            final long pId) {
+        super.onListItemClick(pListView, pView, pPosition, pId);
 
-		if (this.mListener != null)
-		{
-			this.mListener.onShadowVPNConfigureClick(shadowVPNConfigure);
-		}
-	}
+        final ShadowVPNConfigure shadowVPNConfigure =
+                this.mShadowVPNConfigureAdapter.getItem(pPosition);
 
-	@Override
-	public void onCreateContextMenu(final ContextMenu pContextMenu, final View pView, final ContextMenuInfo pContextMenuInfo)
-	{
-		super.onCreateContextMenu(pContextMenu, pView, pContextMenuInfo);
+        if (this.mListener != null) {
+            this.mListener.onShadowVPNConfigureClick(shadowVPNConfigure);
+        }
+    }
 
-		final AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) pContextMenuInfo;
+    @Override
+    public void onCreateContextMenu(final ContextMenu pContextMenu, final View pView,
+            final ContextMenuInfo pContextMenuInfo) {
+        super.onCreateContextMenu(pContextMenu, pView, pContextMenuInfo);
 
-		final ShadowVPNConfigure configure = this.mShadowVPNConfigureAdapter.getItem(menuInfo.position);
+        final AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) pContextMenuInfo;
 
-		pContextMenu.setHeaderTitle(configure.getTitle());
+        final ShadowVPNConfigure configure =
+                this.mShadowVPNConfigureAdapter.getItem(menuInfo.position);
 
-		if (configure.isSelected())
-		{
-			pContextMenu.add(Menu.NONE, ShadowVPNListFragment.MENU_ID_STOP, ShadowVPNListFragment.MENU_ID_STOP, R.string.context_menu_stop_configure);
-		}
-		else
-		{
-			pContextMenu.add(Menu.NONE, ShadowVPNListFragment.MENU_ID_EDIT, ShadowVPNListFragment.MENU_ID_EDIT, R.string.context_menu_edit_configure);
-			pContextMenu.add(Menu.NONE, ShadowVPNListFragment.MENU_ID_DELETE, ShadowVPNListFragment.MENU_ID_DELETE, R.string.context_menu_delete_configure);
-		}
-	}
+        pContextMenu.setHeaderTitle(configure.getTitle());
 
-	@Override
-	public boolean onContextItemSelected(final MenuItem pMenuItem)
-	{
-		final AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) pMenuItem.getMenuInfo();
+        if (configure.isSelected()) {
+            pContextMenu.add(Menu.NONE, ShadowVPNListFragment.MENU_ID_STOP,
+                    ShadowVPNListFragment.MENU_ID_STOP, R.string.context_menu_stop_configure);
+        } else {
+            pContextMenu.add(Menu.NONE, ShadowVPNListFragment.MENU_ID_EDIT,
+                    ShadowVPNListFragment.MENU_ID_EDIT, R.string.context_menu_edit_configure);
+            pContextMenu.add(Menu.NONE, ShadowVPNListFragment.MENU_ID_DELETE,
+                    ShadowVPNListFragment.MENU_ID_DELETE, R.string.context_menu_delete_configure);
+        }
+    }
 
-		final ShadowVPNConfigure configure = this.mShadowVPNConfigureAdapter.getItem(menuInfo.position);
+    @Override
+    public boolean onContextItemSelected(final MenuItem pMenuItem) {
+        final AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) pMenuItem.getMenuInfo();
 
-		switch (pMenuItem.getItemId())
-		{
-			case ShadowVPNListFragment.MENU_ID_STOP:
-				if (this.mListener != null)
-				{
-					this.mListener.onShadowVPNConfigureStop(configure);
-				}
-				return true;
-			case ShadowVPNListFragment.MENU_ID_EDIT:
-				if (this.mListener != null)
-				{
-					this.mListener.onShadowVPNConfigureEdit(configure);
-				}
-				return true;
-			case ShadowVPNListFragment.MENU_ID_DELETE:
-				if (this.mListener != null)
-				{
-					this.mListener.onShadowVPNConfigureDelete(configure);
-				}
-				return true;
-			default:
-				return super.onContextItemSelected(pMenuItem);
-		}
-	}
+        final ShadowVPNConfigure configure =
+                this.mShadowVPNConfigureAdapter.getItem(menuInfo.position);
 
-	public interface IOnFragmentInteractionListener
-	{
-		public void onShadowVPNConfigureClick(final ShadowVPNConfigure pShadowVPNConfigure);
+        switch (pMenuItem.getItemId()) {
+            case ShadowVPNListFragment.MENU_ID_STOP:
+                if (this.mListener != null) {
+                    this.mListener.onShadowVPNConfigureStop(configure);
+                }
+                return true;
+            case ShadowVPNListFragment.MENU_ID_EDIT:
+                if (this.mListener != null) {
+                    this.mListener.onShadowVPNConfigureEdit(configure);
+                }
+                return true;
+            case ShadowVPNListFragment.MENU_ID_DELETE:
+                if (this.mListener != null) {
+                    this.mListener.onShadowVPNConfigureDelete(configure);
+                }
+                return true;
+            default:
+                return super.onContextItemSelected(pMenuItem);
+        }
+    }
 
-		public void onShadowVPNConfigureStop(final ShadowVPNConfigure pShadowVPNConfigure);
+    public interface IOnFragmentInteractionListener {
+        public void onShadowVPNConfigureClick(final ShadowVPNConfigure pShadowVPNConfigure);
 
-		public void onShadowVPNConfigureEdit(final ShadowVPNConfigure pShadowVPNConfigure);
+        public void onShadowVPNConfigureStop(final ShadowVPNConfigure pShadowVPNConfigure);
 
-		public void onShadowVPNConfigureDelete(final ShadowVPNConfigure pShadowVPNConfigure);
-	}
+        public void onShadowVPNConfigureEdit(final ShadowVPNConfigure pShadowVPNConfigure);
+
+        public void onShadowVPNConfigureDelete(final ShadowVPNConfigure pShadowVPNConfigure);
+    }
 }

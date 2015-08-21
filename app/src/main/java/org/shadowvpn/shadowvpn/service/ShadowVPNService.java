@@ -23,231 +23,199 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class ShadowVPNService extends VpnService
-{
-	public static final String EXTRA_VPN_TITLE = "extra_vpn_title";
+public class ShadowVPNService extends VpnService {
 
-	public static final String EXTRA_VPN_SERVER_IP = "extra_vpn_server_ip";
+    public static final String EXTRA_VPN_TITLE = "extra_vpn_title";
 
-	public static final String EXTRA_VPN_PORT = "extra_vpn_port";
+    public static final String EXTRA_VPN_SERVER_IP = "extra_vpn_server_ip";
 
-	public static final String EXTRA_VPN_PASSWORD = "extra_vpn_password";
+    public static final String EXTRA_VPN_PORT = "extra_vpn_port";
 
-	public static final String EXTRA_VPN_USER_TOKEN= "extra_vpn_user_token";
+    public static final String EXTRA_VPN_PASSWORD = "extra_vpn_password";
 
-	public static final String EXTRA_VPN_LOCAL_IP = "extra_vpn_local_ip";
+    public static final String EXTRA_VPN_USER_TOKEN = "extra_vpn_user_token";
 
-	public static final String EXTRA_VPN_MAXIMUM_TRANSMISSION_UNITS = "extra_vpn_maximum_transmission_units";
+    public static final String EXTRA_VPN_LOCAL_IP = "extra_vpn_local_ip";
 
-	public static final String EXTRA_VPN_CONCURRENCY = "extra_vpn_concurrency";
+    public static final String EXTRA_VPN_MTU = "extra_vpn_mtu";
 
-	public static final String EXTRA_VPN_BYPASS_CHINA_ROUTES = "extra_vpn_bypass_china_routes";
+    public static final String EXTRA_VPN_CONCURRENCY = "extra_vpn_concurrency";
 
-	private final IBinder mBinder = new ShadowVPNServiceBinder();
+    public static final String EXTRA_VPN_BYPASS_CHINA_ROUTES = "extra_vpn_bypass_china_routes";
 
-	private volatile Looper mServiceLooper;
+    private final IBinder mBinder = new ShadowVPNServiceBinder();
 
-	private volatile ServiceHandler mServiceHandler;
+    private volatile Looper mServiceLooper;
 
-	private ShadowVPN mShadowVPN;
+    private volatile ServiceHandler mServiceHandler;
 
-	private final class ServiceHandler extends Handler
-	{
-		public ServiceHandler(final Looper pLooper)
-		{
-			super(pLooper);
-		}
+    private ShadowVPN mShadowVPN;
 
-		@Override
-		public void handleMessage(final Message pMessage)
-		{
-			ShadowVPNService.this.onHandleIntent((Intent) pMessage.obj);
+    @Override
+    public void onCreate() {
+        super.onCreate();
 
-			ShadowVPNService.this.stopSelf(pMessage.arg1);
-		}
-	}
+        final HandlerThread thread = new HandlerThread("ShadowVPNService");
+        thread.start();
 
-	public final class ShadowVPNServiceBinder extends Binder
-	{
-		public ShadowVPNService getShadowVPNService()
-		{
-			return ShadowVPNService.this;
-		}
+        this.mServiceLooper = thread.getLooper();
+        this.mServiceHandler = new ServiceHandler(this.mServiceLooper);
+    }
 
-		@Override
-		protected boolean onTransact(final int pCode, final Parcel pData, final Parcel pReply, final int pFlags) throws RemoteException
-		{
-			if (pCode == IBinder.LAST_CALL_TRANSACTION)
-			{
-				ShadowVPNService.this.onRevoke();
+    @Override
+    public void onStart(final Intent pIntent, final int pStartId) {
+        final Message message = this.mServiceHandler.obtainMessage();
+        message.obj = pIntent;
+        message.arg1 = pStartId;
 
-				return true;
-			}
+        this.mServiceHandler.sendMessage(message);
+    }
 
-			return super.onTransact(pCode, pData, pReply, pFlags);
-		}
-	}
+    @Override
+    public int onStartCommand(Intent pIntent, int pFlags, int pStartId) {
+        this.onStart(pIntent, pStartId);
 
-	@Override
-	public void onCreate()
-	{
-		super.onCreate();
+        return Service.START_REDELIVER_INTENT;
+    }
 
-		final HandlerThread thread = new HandlerThread("ShadowVPNService");
-		thread.start();
+    @Override
+    public IBinder onBind(final Intent pIntent) {
+        return this.mBinder;
+    }
 
-		this.mServiceLooper = thread.getLooper();
-		this.mServiceHandler = new ServiceHandler(this.mServiceLooper);
-	}
+    protected void onHandleIntent(final Intent pIntent) {
+        final Bundle extras = pIntent.getExtras();
 
-	@Override
-	public void onStart(final Intent pIntent, final int pStartId)
-	{
-		final Message message = this.mServiceHandler.obtainMessage();
-		message.obj = pIntent;
-		message.arg1 = pStartId;
+        if (extras == null) {
+            return;
+        }
 
-		this.mServiceHandler.sendMessage(message);
-	}
+        this.stopVPN();
 
-	@Override
-	public int onStartCommand(Intent pIntent, int pFlags, int pStartId)
-	{
-		this.onStart(pIntent, pStartId);
+        final String title = extras.getString(ShadowVPNService.EXTRA_VPN_TITLE);
+        final String serverIP = extras.getString(ShadowVPNService.EXTRA_VPN_SERVER_IP);
+        final int port = extras.getInt(ShadowVPNService.EXTRA_VPN_PORT);
+        final String password = extras.getString(ShadowVPNService.EXTRA_VPN_PASSWORD);
+        final String userToken = extras.getString(ShadowVPNService.EXTRA_VPN_USER_TOKEN);
+        final String localIP = extras.getString(ShadowVPNService.EXTRA_VPN_LOCAL_IP);
+        final int maximumTransmissionUnits =
+                extras.getInt(ShadowVPNService.EXTRA_VPN_MTU);
+        final int concurrency = extras.getInt(ShadowVPNService.EXTRA_VPN_CONCURRENCY);
+        final boolean bypassChinaRoutes =
+                extras.getBoolean(ShadowVPNService.EXTRA_VPN_BYPASS_CHINA_ROUTES);
 
-		return Service.START_REDELIVER_INTENT;
-	}
+        final Builder builder = new Builder();
+        builder.addAddress(localIP, 24);
+        this.setupShadowVPNRoute(builder, bypassChinaRoutes);
+        builder.addDnsServer("8.8.8.8");
+        builder.addDnsServer("8.8.4.4");
+        builder.setSession(this.getString(R.string.app_name) + "[" + title + "]");
 
-	@Override
-	public IBinder onBind(final Intent pIntent)
-	{
-		return this.mBinder;
-	}
+        final ParcelFileDescriptor fileDescriptor = builder.establish();
 
-	protected void onHandleIntent(final Intent pIntent)
-	{
-		final Bundle extras = pIntent.getExtras();
+        if (fileDescriptor == null) {
+            return;
+        }
 
-		if (extras == null)
-		{
-			return;
-		}
+        this.mShadowVPN = new ShadowVPN(fileDescriptor, password, userToken, serverIP, port,
+                maximumTransmissionUnits, concurrency);
 
-		this.stopVPN();
+        try {
+            this.mShadowVPN.init();
+        } catch (final IOException pIOException) {
+            Log.e(ShadowVPNService.class.getSimpleName(), "", pIOException);
+        }
 
-		final String title = extras.getString(ShadowVPNService.EXTRA_VPN_TITLE);
-		final String serverIP = extras.getString(ShadowVPNService.EXTRA_VPN_SERVER_IP);
-		final int port = extras.getInt(ShadowVPNService.EXTRA_VPN_PORT);
-		final String password = extras.getString(ShadowVPNService.EXTRA_VPN_PASSWORD);
-		final String userToken = extras.getString(ShadowVPNService.EXTRA_VPN_USER_TOKEN);
-		final String localIP = extras.getString(ShadowVPNService.EXTRA_VPN_LOCAL_IP);
-		final int maximumTransmissionUnits = extras.getInt(ShadowVPNService.EXTRA_VPN_MAXIMUM_TRANSMISSION_UNITS);
-		final int concurrency = extras.getInt(ShadowVPNService.EXTRA_VPN_CONCURRENCY);
-		final boolean bypassChinaRoutes = extras.getBoolean(ShadowVPNService.EXTRA_VPN_BYPASS_CHINA_ROUTES);
+        this.protect(this.mShadowVPN.getSockFileDescriptor());
 
-		final Builder builder = new Builder();
-		builder.addAddress(localIP, 24);
-		this.setupShadowVPNRoute(builder, bypassChinaRoutes);
-		builder.addDnsServer("8.8.8.8");
-		builder.addDnsServer("8.8.4.4");
-		builder.setSession(this.getString(R.string.app_name) + "[" + title + "]");
+        ShadowVPNConfigureHelper.selectShadowVPNConfigure(this, title);
 
-		final ParcelFileDescriptor fileDescriptor = builder.establish();
+        this.mShadowVPN.start();
+    }
 
-		if (fileDescriptor == null)
-		{
-			return;
-		}
+    private void setupShadowVPNRoute(final Builder pBuilder, final boolean pBypassChinaRoutes) {
+        if (pBypassChinaRoutes) {
+            final BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(this.getResources().openRawResource(R.raw.foreign)));
 
-		this.mShadowVPN = new ShadowVPN(fileDescriptor, password, userToken, serverIP, port,
-				maximumTransmissionUnits, concurrency);
+            String line;
 
-		try
-		{
-			this.mShadowVPN.init();
-		}
-		catch (final IOException pIOException)
-		{
-			Log.e(ShadowVPNService.class.getSimpleName(), "", pIOException);
-		}
+            try {
+                while ((line = reader.readLine()) != null) {
+                    final String[] route = line.split("/");
 
-		this.protect(this.mShadowVPN.getSockFileDescriptor());
+                    if (route.length == 2) {
+                        pBuilder.addRoute(route[0], Integer.parseInt(route[1]));
+                    }
+                }
+            } catch (final Throwable pThrowable) {
+                Log.e(ShadowVPNService.class.getSimpleName(), "", pThrowable);
+            } finally {
+                try {
+                    reader.close();
+                } catch (final IOException pIOException) {
+                    // do nothing
+                }
+            }
+        } else {
+            pBuilder.addRoute("0.0.0.0", 0);
+        }
+    }
 
-		ShadowVPNConfigureHelper.selectShadowVPNConfigure(this, title);
+    @Override
+    public void onDestroy() {
+        this.mServiceLooper.quit();
 
-		this.mShadowVPN.start();
-	}
+        ShadowVPNConfigureHelper.resetAllSelectedValue(this);
 
-	private void setupShadowVPNRoute(final Builder pBuilder, final boolean pBypassChinaRoutes)
-	{
-		if (pBypassChinaRoutes)
-		{
-			final BufferedReader reader = new BufferedReader(new InputStreamReader(this.getResources().openRawResource(R.raw.foreign)));
+        this.stopVPN();
+    }
 
-			String line;
+    @Override
+    public void onRevoke() {
+        super.onRevoke();
 
-			try
-			{
-				while ((line = reader.readLine()) != null)
-				{
-					final String[] route = line.split("/");
+        this.stopVPN();
+    }
 
-					if (route.length == 2)
-					{
-						pBuilder.addRoute(route[0], Integer.parseInt(route[1]));
-					}
-				}
-			}
-			catch (final Throwable pThrowable)
-			{
-				Log.e(ShadowVPNService.class.getSimpleName(), "", pThrowable);
-			}
-			finally
-			{
-				try
-				{
-					reader.close();
-				}
-				catch (final IOException pIOException)
-				{
-					// do nothing
-				}
-			}
-		}
-		else
-		{
-			pBuilder.addRoute("0.0.0.0", 0);
-		}
-	}
+    public boolean isShadowVPNRunning() {
+        return this.mShadowVPN != null && this.mShadowVPN.isRunning();
+    }
 
-	@Override
-	public void onDestroy()
-	{
-		this.mServiceLooper.quit();
+    public void stopVPN() {
+        if (this.mShadowVPN != null && this.mShadowVPN.isRunning()) {
+            this.mShadowVPN.shouldStop();
+        }
+    }
 
-		ShadowVPNConfigureHelper.resetAllSelectedValue(this);
+    private final class ServiceHandler extends Handler {
+        public ServiceHandler(final Looper pLooper) {
+            super(pLooper);
+        }
 
-		this.stopVPN();
-	}
+        @Override
+        public void handleMessage(final Message pMessage) {
+            ShadowVPNService.this.onHandleIntent((Intent) pMessage.obj);
 
-	@Override
-	public void onRevoke()
-	{
-		super.onRevoke();
+            ShadowVPNService.this.stopSelf(pMessage.arg1);
+        }
+    }
 
-		this.stopVPN();
-	}
+    public final class ShadowVPNServiceBinder extends Binder {
+        public ShadowVPNService getShadowVPNService() {
+            return ShadowVPNService.this;
+        }
 
-	public boolean isShadowVPNRunning()
-	{
-		return this.mShadowVPN != null && this.mShadowVPN.isRunning();
-	}
+        @Override
+        protected boolean onTransact(final int pCode, final Parcel pData, final Parcel pReply,
+                final int pFlags) throws RemoteException {
+            if (pCode == IBinder.LAST_CALL_TRANSACTION) {
+                ShadowVPNService.this.onRevoke();
 
-	public void stopVPN()
-	{
-		if (this.mShadowVPN != null && this.mShadowVPN.isRunning())
-		{
-			this.mShadowVPN.shouldStop();
-		}
-	}
+                return true;
+            }
+
+            return super.onTransact(pCode, pData, pReply, pFlags);
+        }
+    }
 }

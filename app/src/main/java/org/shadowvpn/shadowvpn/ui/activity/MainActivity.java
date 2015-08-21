@@ -19,168 +19,155 @@ import org.shadowvpn.shadowvpn.ui.fragment.ShadowVPNListFragment.IOnFragmentInte
 import org.shadowvpn.shadowvpn.util.Intents;
 import org.shadowvpn.shadowvpn.util.ShadowVPNConfigureHelper;
 
-public class MainActivity extends ActionBarActivity implements IOnFragmentInteractionListener, ServiceConnection
-{
-	private static final int REQUEST_CODE_VPN_PREPARE = 1;
+public class MainActivity extends ActionBarActivity
+        implements IOnFragmentInteractionListener, ServiceConnection {
 
-	private ShadowVPNService mShadowVPNService;
+    private static final int REQUEST_CODE_VPN_PREPARE = 1;
 
-	private ShadowVPNConfigure mCurrentSelectedShadowVPNConfigure;
+    private ShadowVPNService mShadowVPNService;
 
-	@Override
-	protected void onCreate(final Bundle pSavedInstanceState)
-	{
-		super.onCreate(pSavedInstanceState);
+    private ShadowVPNConfigure mCurrentSelectedShadowVPNConfigure;
 
-		this.setContentView(R.layout.activity_main);
+    @Override
+    protected void onCreate(final Bundle pSavedInstanceState) {
+        super.onCreate(pSavedInstanceState);
 
-		if (pSavedInstanceState == null)
-		{
-			this.getSupportFragmentManager().beginTransaction().add(R.id.container, ShadowVPNListFragment.newInstance()).commit();
-		}
-	}
+        this.setContentView(R.layout.activity_main);
 
-	@Override
-	protected void onStart()
-	{
-		super.onStart();
+        if (pSavedInstanceState == null) {
+            this.getSupportFragmentManager().beginTransaction().add(R.id.container,
+                    ShadowVPNListFragment.newInstance()).commit();
+        }
+    }
 
-		final Intent intent = new Intent(this, ShadowVPNService.class);
-		this.startService(intent);
-	}
+    @Override
+    protected void onStart() {
+        super.onStart();
 
-	@Override
-	protected void onResume()
-	{
-		super.onResume();
+        final Intent intent = new Intent(this, ShadowVPNService.class);
+        this.startService(intent);
+    }
 
-		final Intent intent = new Intent(this, ShadowVPNService.class);
-		this.bindService(intent, this, Context.BIND_ABOVE_CLIENT);
-	}
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-	@Override
-	protected void onPause()
-	{
-		super.onPause();
+        final Intent intent = new Intent(this, ShadowVPNService.class);
+        this.bindService(intent, this, Context.BIND_ABOVE_CLIENT);
+    }
 
-		this.unbindService(this);
-	}
+    @Override
+    protected void onPause() {
+        super.onPause();
 
-	@Override
-	protected void onStop()
-	{
-		super.onStop();
-	}
+        this.unbindService(this);
+    }
 
-	@Override
-	public boolean onCreateOptionsMenu(final Menu pMenu)
-	{
-		this.getMenuInflater().inflate(R.menu.activity_main, pMenu);
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
 
-		return true;
-	}
+    @Override
+    public boolean onCreateOptionsMenu(final Menu pMenu) {
+        this.getMenuInflater().inflate(R.menu.activity_main, pMenu);
 
-	@Override
-	public boolean onOptionsItemSelected(final MenuItem pMenuItem)
-	{
-		switch (pMenuItem.getItemId())
-		{
-			case R.id.menu_vpn_add:
-				Intents.addShadowVPNConfigure(this);
-				return true;
-			default:
-				return super.onOptionsItemSelected(pMenuItem);
-		}
-	}
+        return true;
+    }
 
-	@Override
-	public void onShadowVPNConfigureClick(final ShadowVPNConfigure pShadowVPNConfigure)
-	{
-		this.mCurrentSelectedShadowVPNConfigure = pShadowVPNConfigure;
+    @Override
+    public boolean onOptionsItemSelected(final MenuItem pMenuItem) {
+        switch (pMenuItem.getItemId()) {
+            case R.id.menu_vpn_add:
+                Intents.addShadowVPNConfigure(this);
+                return true;
+            default:
+                return super.onOptionsItemSelected(pMenuItem);
+        }
+    }
 
-		if (!this.mCurrentSelectedShadowVPNConfigure.isSelected())
-		{
-			this.prepareShadowVPN();
-		}
-	}
+    @Override
+    public void onShadowVPNConfigureClick(final ShadowVPNConfigure pShadowVPNConfigure) {
+        this.mCurrentSelectedShadowVPNConfigure = pShadowVPNConfigure;
 
-	@Override
-	public void onShadowVPNConfigureStop(final ShadowVPNConfigure pShadowVPNConfigure)
-	{
-		if (this.mShadowVPNService != null)
-		{
-			this.mShadowVPNService.stopVPN();
-		}
-	}
+        if (!this.mCurrentSelectedShadowVPNConfigure.isSelected()) {
+            this.prepareShadowVPN();
+        }
+    }
 
-	@Override
-	public void onShadowVPNConfigureEdit(final ShadowVPNConfigure pShadowVPNConfigure)
-	{
-		Intents.editShadowVPNConfigure(this, pShadowVPNConfigure);
-	}
+    @Override
+    public void onShadowVPNConfigureStop(final ShadowVPNConfigure pShadowVPNConfigure) {
+        if (this.mShadowVPNService != null) {
+            this.mShadowVPNService.stopVPN();
+        }
+    }
 
-	@Override
-	public void onShadowVPNConfigureDelete(final ShadowVPNConfigure pShadowVPNConfigure)
-	{
-		ShadowVPNConfigureHelper.delete(this, pShadowVPNConfigure.getTitle());
-	}
+    @Override
+    public void onShadowVPNConfigureEdit(final ShadowVPNConfigure pShadowVPNConfigure) {
+        Intents.editShadowVPNConfigure(this, pShadowVPNConfigure);
+    }
 
-	@Override
-	protected void onActivityResult(final int pRequestCode, final int pResultCode, final Intent pData)
-	{
-		super.onActivityResult(pRequestCode, pResultCode, pData);
+    @Override
+    public void onShadowVPNConfigureDelete(final ShadowVPNConfigure pShadowVPNConfigure) {
+        ShadowVPNConfigureHelper.delete(this, pShadowVPNConfigure.getTitle());
+    }
 
-		if (pRequestCode == MainActivity.REQUEST_CODE_VPN_PREPARE && pResultCode == MainActivity.RESULT_OK)
-		{
-			this.startShadowVPN();
-		}
-	}
+    @Override
+    protected void onActivityResult(final int pRequestCode, final int pResultCode,
+            final Intent pData) {
+        super.onActivityResult(pRequestCode, pResultCode, pData);
 
-	public void prepareShadowVPN()
-	{
-		final Intent intent = ShadowVPNService.prepare(this);
+        if (pRequestCode == MainActivity.REQUEST_CODE_VPN_PREPARE && pResultCode == MainActivity.RESULT_OK) {
+            this.startShadowVPN();
+        }
+    }
 
-		if (intent != null)
-		{
-			this.startActivityForResult(intent, MainActivity.REQUEST_CODE_VPN_PREPARE);
-		}
-		else
-		{
-			this.startShadowVPN();
-		}
-	}
+    public void prepareShadowVPN() {
+        final Intent intent = ShadowVPNService.prepare(this);
 
-	private void startShadowVPN()
-	{
-		if (this.mCurrentSelectedShadowVPNConfigure != null)
-		{
-			final Intent intent = new Intent(this, ShadowVPNService.class);
-			intent.putExtra(ShadowVPNService.EXTRA_VPN_TITLE, this.mCurrentSelectedShadowVPNConfigure.getTitle());
-			intent.putExtra(ShadowVPNService.EXTRA_VPN_SERVER_IP, this.mCurrentSelectedShadowVPNConfigure.getServerIP());
-			intent.putExtra(ShadowVPNService.EXTRA_VPN_PORT, this.mCurrentSelectedShadowVPNConfigure.getPort());
-			intent.putExtra(ShadowVPNService.EXTRA_VPN_PASSWORD, this.mCurrentSelectedShadowVPNConfigure.getPassword());
-			intent.putExtra(ShadowVPNService.EXTRA_VPN_USER_TOKEN, this.mCurrentSelectedShadowVPNConfigure.getUserToken());
-			intent.putExtra(ShadowVPNService.EXTRA_VPN_LOCAL_IP, this.mCurrentSelectedShadowVPNConfigure.getLocalIP());
-			intent.putExtra(ShadowVPNService.EXTRA_VPN_MAXIMUM_TRANSMISSION_UNITS, this.mCurrentSelectedShadowVPNConfigure.getMaximumTransmissionUnits());
-			intent.putExtra(ShadowVPNService.EXTRA_VPN_CONCURRENCY, this.mCurrentSelectedShadowVPNConfigure.getConcurrency());
-			intent.putExtra(ShadowVPNService.EXTRA_VPN_BYPASS_CHINA_ROUTES, this.mCurrentSelectedShadowVPNConfigure.isBypassChinaRoutes());
+        if (intent != null) {
+            this.startActivityForResult(intent, MainActivity.REQUEST_CODE_VPN_PREPARE);
+        } else {
+            this.startShadowVPN();
+        }
+    }
 
-			this.startService(intent);
-			this.bindService(intent, this, Context.BIND_AUTO_CREATE);
-		}
-	}
+    private void startShadowVPN() {
+        if (this.mCurrentSelectedShadowVPNConfigure != null) {
+            final Intent intent = new Intent(this, ShadowVPNService.class);
+            intent.putExtra(ShadowVPNService.EXTRA_VPN_TITLE,
+                    this.mCurrentSelectedShadowVPNConfigure.getTitle());
+            intent.putExtra(ShadowVPNService.EXTRA_VPN_SERVER_IP,
+                    this.mCurrentSelectedShadowVPNConfigure.getServerIP());
+            intent.putExtra(ShadowVPNService.EXTRA_VPN_PORT,
+                    this.mCurrentSelectedShadowVPNConfigure.getPort());
+            intent.putExtra(ShadowVPNService.EXTRA_VPN_PASSWORD,
+                    this.mCurrentSelectedShadowVPNConfigure.getPassword());
+            intent.putExtra(ShadowVPNService.EXTRA_VPN_USER_TOKEN,
+                    this.mCurrentSelectedShadowVPNConfigure.getUserToken());
+            intent.putExtra(ShadowVPNService.EXTRA_VPN_LOCAL_IP,
+                    this.mCurrentSelectedShadowVPNConfigure.getLocalIP());
+            intent.putExtra(ShadowVPNService.EXTRA_VPN_MTU,
+                    this.mCurrentSelectedShadowVPNConfigure.getMaximumTransmissionUnits());
+            intent.putExtra(ShadowVPNService.EXTRA_VPN_CONCURRENCY,
+                    this.mCurrentSelectedShadowVPNConfigure.getConcurrency());
+            intent.putExtra(ShadowVPNService.EXTRA_VPN_BYPASS_CHINA_ROUTES,
+                    this.mCurrentSelectedShadowVPNConfigure.isBypassChinaRoutes());
 
-	@Override
-	public void onServiceConnected(final ComponentName pComponentName, final IBinder pIBinder)
-	{
-		final ShadowVPNServiceBinder binder = (ShadowVPNServiceBinder) pIBinder;
+            this.startService(intent);
+            this.bindService(intent, this, Context.BIND_AUTO_CREATE);
+        }
+    }
 
-		this.mShadowVPNService = binder.getShadowVPNService();
-	}
+    @Override
+    public void onServiceConnected(final ComponentName pComponentName, final IBinder pIBinder) {
+        final ShadowVPNServiceBinder binder = (ShadowVPNServiceBinder) pIBinder;
 
-	@Override
-	public void onServiceDisconnected(final ComponentName pComponentName)
-	{
-		this.mShadowVPNService = null;
-	}
+        this.mShadowVPNService = binder.getShadowVPNService();
+    }
+
+    @Override
+    public void onServiceDisconnected(final ComponentName pComponentName) {
+        this.mShadowVPNService = null;
+    }
 }
