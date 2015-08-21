@@ -9,20 +9,30 @@ android {
         minSdkVersion 15
         targetSdkVersion 21
         versionCode 1
-        versionName "1.1.0"
+        versionName "1.1.1"
+    }
+
+    signingConfigs {
+        release {
+            storeFile rootProject.file("release.jks")
+            storePassword "${System.env.KEYSTORE_PASSWORD}"
+            keyAlias "${System.env.SHADOWVPN_ALIAS}"
+            keyPassword "${System.env.ALIAS_PASSWORD}"
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:21.0.3'
-    compile "com.android.support:appcompat-v7:21.0.3"
-    compile 'io.realm:realm-android:0.74.0'
+    compile 'com.android.support:support-v4:22.2.0'
+    compile "com.android.support:appcompat-v7:22.2.0"
+    compile 'io.realm:realm-android:0.82.1'
     compile 'com.marvinlabs:android-floatinglabel-widgets:1.5.0@aar'
 }

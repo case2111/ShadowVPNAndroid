@@ -10,10 +10,13 @@ sed -i 's/--arch="$TARGET_ARCH"/--arch="$TARCH"/g' jni/ShadowVPN/dist-build/andr
 
 make || exit 1
 
-#gradle clean build
+# gradle clean build
 gradle clean assembleDebug
+
+cp app/build/outputs/apk/app-debug.apk $HOME/ShadowVPN-debug-v$VERSION.apk
+
+gradle clean assembleRelease
 
 ls -lR app/build/outputs
 
-cp app/build/outputs/apk/app-debug.apk $HOME/ShadowVPN-v1.1.apk
-
+cp app/build/outputs/apk/app-release.apk $HOME/ShadowVPN-release-v$VERSION.apk
