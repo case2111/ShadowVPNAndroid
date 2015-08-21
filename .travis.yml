@@ -38,11 +38,11 @@ deploy:
   provider: releases
   api-key: $GITHUB_TOKEN
   file:
-    - "$HOME/ShadowVPN-v1.0.apk"
+    - "$HOME/ShadowVPN-v1.1.apk"
   skip_cleanup: true
   on:
     tags: true
 env:
     global:
-        secure: "YOUR_GITHUB_TOKEN_ENCRYPT_WITH_TRAVIS (http://docs.travis-ci.com/user/encryption-keys/)"
+        secure: "SMuUyFPMHB9zeR+uf7ferr168tO17/xxt2UQ9BBIuR3QoiVWFZ0tasLXhQMW2Jv2MBqi8AM6IiU3EN302trwyktJBoMpJtt77D8D+lBtQlvE7WuBHKnFvqvhpmRy1uhbzqeJcSUg27NEJT2Z++KINYanlHdRbRajIURJmbJisn1gHL96YuYcgf1RevRuRv+Rpk6z+Rfwl7ZYeYy/18HRqar8ZNTEvikqUhLIIKM4fCPZa1wN5C7Fst7acC0ElYcMMpom6LXY5Db4zpRESMnHKNPYzb3mqh3UeHlKohpaiLgz5KyAMSxOATcQ1TSGmiVpD4J6TMh1mqrgdFMwt75iYN26NRXqPiyFD1l9X85aWI6Z0hk3k13STVoY6ESY+KGokGUxqAvJojA20Whpcugqtha/RkRB6Mshf+aHCIudLjVNt91OBtU5vRX6LrA02VRGnNu9ME6+GUQKhntvfUg3ZT3Zg8onFMKRTZEnuC40aFbHWQBo4Lpozyp+uPK4sb0pt+V3lXRUy/8J1o/MD1HrIkzAuineqiBuoRRIxvhFwXcmMJ26GcEq6kK22O7dy0SeWU31bpU5TQ1dlfML9KQldcpXB2BROlx8n6GIOK6tl1sThrz1sAR0J++lStgttcKbmHciMHAz+AeWDsWaurdD8L3zzFOfutGHZSepeZzDYj8="
 
